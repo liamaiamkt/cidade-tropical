@@ -105,10 +105,19 @@ textarea{resize:vertical;min-height:88px;line-height:1.5}
 
 /* ---------- arquivos ---------- */
 .solta{
+  display:block;
   border:2px dashed var(--areia);background:#FDFBF8;border-radius:12px;
   padding:30px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;
+  margin:0;
 }
 .solta:hover,.solta.ativa{border-color:var(--bronze);background:#FBF5EC}
+/* O input fica invisível, mas CONTINUA na página (não usar display:none nem
+   o atributo hidden — o Safari do iPhone se recusa a abrir o seletor nesse caso). */
+#arquivos{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+#arquivos:focus-visible + .solta{border-color:var(--bronze);box-shadow:0 0 0 3px rgba(170,112,61,.16)}
 .solta svg{display:block;margin:0 auto 10px}
 .solta b{display:block;font-weight:600;font-size:16px;color:var(--grafite)}
 .solta span{display:block;font-size:13.5px;color:var(--placeholder);margin-top:4px}
@@ -299,15 +308,15 @@ footer b{font-weight:600;color:var(--grafite);letter-spacing:.06em}
     <section>
       <div class="cab-sec"><div class="num">3</div><h2>Arquivos</h2></div>
 
-      <div class="solta" id="solta" tabindex="0" role="button" aria-label="Escolher arquivos para enviar">
-        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#AA703D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <input type="file" id="arquivos" multiple aria-label="Escolher arquivos para enviar">
+      <label class="solta" id="solta" for="arquivos">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#AA703D" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"/><path d="M3 15v3a3 3 0 0 0 3 3h12a3 3 0 0 0 3-3v-3"/>
         </svg>
         <b>Toque para escolher os arquivos</b>
         <span>Ou arraste até aqui. Pode enviar vários de uma vez.</span>
         <span>PDF, Word, Excel, imagem, áudio, vídeo — até 30 MB cada.</span>
-      </div>
-      <input type="file" id="arquivos" multiple hidden>
+      </label>
       <ul id="lista"></ul>
       <div id="total"></div>
       <div class="msg-erro" id="e-arquivos">Anexe pelo menos um arquivo.</div>
@@ -354,7 +363,7 @@ footer b{font-weight:600;color:var(--grafite);letter-spacing:.06em}
    Ela termina em  /exec
    Exemplo: "https://script.google.com/macros/s/AKfycbxxxxxxxxxxxx/exec"
    ========================================================================== */
-const URL_DO_MOTOR = "const URL_DO_MOTOR = "https://script.google.com/macros/s/AKfycbyYsXS3yZ1KRdDZyh-qG_kqqUTPKIIQdyiSqarqaiJh1q_jaB057pSciqcKgMgkI1XnrA/exec";
+const URL_DO_MOTOR = "COLE_AQUI_A_URL_DO_APPS_SCRIPT";
 /* ========================================================================== */
 
 const MAX_MB = 30;
@@ -384,11 +393,10 @@ try {
   $('competencia').value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 })();
 
-/* --- seleção de arquivos --- */
-solta.addEventListener('click', function () { entrada.click(); });
-solta.addEventListener('keydown', function (ev) {
-  if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); entrada.click(); }
-});
+/* --- seleção de arquivos ---
+   A caixa pontilhada é um <label for="arquivos">, então quem abre o seletor é o
+   próprio navegador. Isso funciona em tudo, inclusive no Safari do iPhone, onde
+   abrir o seletor por JavaScript costuma ser bloqueado. Abaixo só o arrastar-e-soltar. */
 ['dragenter', 'dragover'].forEach(function (ev) {
   solta.addEventListener(ev, function (e) { e.preventDefault(); solta.classList.add('ativa'); });
 });
